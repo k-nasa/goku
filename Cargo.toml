@@ -9,3 +9,5 @@ edition = "2018"
 [dependencies]
 async-std = { version = "0.99.11", features = ["unstable"] }
 hyper = "0.13.0-alpha.4"
+surf = { git="https://github.com/http-rs/surf" }
+reqwest = "0.10.0-alpha.1"

@@ -19,7 +19,7 @@ fn main() -> std::io::Result<()> {
         task::spawn(async move {
             for _ in 0..request_ammount {
                 let handler = task::spawn(async {
-                    future::timeout(Duration::from_secs(2), send_request()).await
+                    future::timeout(Duration::from_millis(500), send_request()).await
                 });
                 s.send(handler).await;
             }
@@ -27,8 +27,11 @@ fn main() -> std::io::Result<()> {
 
         task::spawn(async move {
             while let Some(v) = r.recv().await {
-                if v.await.is_ok() {
-                    count += 1;
+                match v.await {
+                    Err(e) => {
+                        // println!("{}", e)
+                    },
+                    Ok(_) => count += 1,
                 }
             }
 
@@ -42,13 +45,17 @@ fn main() -> std::io::Result<()> {
 }
 
 async fn send_request() {
-    let now = Instant::now();
+    // let now = Instant::now();
 
-    // TODO: change to command line arguments
-    let uri = "http://localhost:8080".parse().unwrap();
-    let client = Client::default();
+    surf::get("http://localhost:8080")
+        .set_header("Host", "localhost:8080")
+        .set_header("User-Agent", "goku/0.0.1")
+        .set_header("Accept-Encoding", "gzip")
+        .set_header("Expect", "")
+        .set_header("Connection", "keep-alive")
+        .set_header("Transfer-Encoding", "")
+        .await.unwrap()
+        ;
 
-    let _res = client.get(uri).await;
-
-    println!("{:?}", now.elapsed().as_millis());
+    // println!("{:?}", now.elapsed().as_millis());
 }
