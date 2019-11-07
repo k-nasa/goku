@@ -1,17 +1,16 @@
 use std::time::{Duration, Instant};
 
-use async_std::sync::channel;
-use hyper::{Client};
 use async_std::future;
+use async_std::sync::channel;
 use async_std::task;
+use hyper::Client;
 
 // TODO: change to command line arguments
-const max_connections: usize = 200;
+const max_connections: usize = 20;
 const request_ammount: usize = 10_000;
 
 fn main() -> std::io::Result<()> {
     task::block_on(async {
-
         let (s, r) = channel(max_connections);
 
         let mut count = 0;
@@ -20,8 +19,7 @@ fn main() -> std::io::Result<()> {
         task::spawn(async move {
             for _ in 0..request_ammount {
                 let handler = task::spawn(async {
-                    // task::sleep(Duration::from_secs(1)).await;
-                    future::timeout(Duration::from_secs(2),send_request()).await
+                    future::timeout(Duration::from_secs(2), send_request()).await
                 });
                 s.send(handler).await;
             }
@@ -35,7 +33,8 @@ fn main() -> std::io::Result<()> {
             }
             println!("count: {}", count);
             println!("duration: {:?}", now.elapsed());
-        }).await;
+        })
+        .await;
     });
 
     Ok(())
@@ -46,7 +45,5 @@ async fn send_request() {
     let uri = "http://localhost:8080".parse().unwrap();
     let client = Client::default();
 
-    let _res = client
-        .get(uri)
-        .await;
+    let _res = client.get(uri).await;
 }
