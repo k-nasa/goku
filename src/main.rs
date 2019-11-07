@@ -31,6 +31,7 @@ fn main() -> std::io::Result<()> {
                     count += 1;
                 }
             }
+
             println!("count: {}", count);
             println!("duration: {:?}", now.elapsed());
         })
@@ -41,9 +42,13 @@ fn main() -> std::io::Result<()> {
 }
 
 async fn send_request() {
+    let now = Instant::now();
+
     // TODO: change to command line arguments
     let uri = "http://localhost:8080".parse().unwrap();
     let client = Client::default();
 
     let _res = client.get(uri).await;
+
+    println!("{:?}", now.elapsed().as_millis());
 }
