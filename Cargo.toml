@@ -7,7 +7,6 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-async-std = { version = "0.99.11", features = ["unstable"] }
-hyper = "0.13.0-alpha.4"
-surf = { git="https://github.com/http-rs/surf" }
-reqwest = "0.10.0-alpha.1"
+async-std = { git="https://github.com/async-rs/async-std", features = ["unstable"] }
+once_cell = "1.2.0"
+futures = "0.3.1"
