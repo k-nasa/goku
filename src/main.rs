@@ -1,61 +1,54 @@
 use std::time::{Duration, Instant};
 
-use async_std::future;
+use async_std::net::TcpStream;
+use async_std::prelude::*;
 use async_std::sync::channel;
 use async_std::task;
-use hyper::Client;
 
 // TODO: change to command line arguments
-const max_connections: usize = 20;
-const request_ammount: usize = 10_000;
+const MAX_CONNECTIONS: usize = 10;
+const REQUEST_AMMOUNT: usize = 10_000;
 
 fn main() -> std::io::Result<()> {
-    task::block_on(async {
-        let (s, r) = channel(max_connections);
+    let (s, r) = channel(MAX_CONNECTIONS);
 
-        let mut count = 0;
+    let mut count = 0;
 
-        let now = Instant::now();
-        task::spawn(async move {
-            for _ in 0..request_ammount {
-                let handler = task::spawn(async {
-                    future::timeout(Duration::from_millis(500), send_request()).await
-                });
-                s.send(handler).await;
-            }
-        });
-
-        task::spawn(async move {
-            while let Some(v) = r.recv().await {
-                match v.await {
-                    Err(e) => {
-                        // println!("{}", e)
-                    },
-                    Ok(_) => count += 1,
-                }
-            }
-
-            println!("count: {}", count);
-            println!("duration: {:?}", now.elapsed());
-        })
-        .await;
+    let now = Instant::now();
+    task::spawn(async move {
+        for _ in 0..REQUEST_AMMOUNT {
+            let handler = task::spawn(async {
+                send_request().await
+            });
+            s.send(handler).await;
+        }
     });
+
+    task::block_on(async {
+        while let Some(v) = r.recv().await {
+            match v.await {
+                Err(e) => {
+                    println!("{}", e)
+                },
+                Ok(_) => count += 1,
+            }
+        }
+    });
+
+    println!("count: {}", count);
+    println!("duration: {:?}", now.elapsed());
 
     Ok(())
 }
 
-async fn send_request() {
-    // let now = Instant::now();
+async fn send_request() -> Result<(), async_std::io::Error> {
+    let mut stream = TcpStream::connect("127.0.0.1:8080").await?;
 
-    surf::get("http://localhost:8080")
-        .set_header("Host", "localhost:8080")
-        .set_header("User-Agent", "goku/0.0.1")
-        .set_header("Accept-Encoding", "gzip")
-        .set_header("Expect", "")
-        .set_header("Connection", "keep-alive")
-        .set_header("Transfer-Encoding", "")
-        .await.unwrap()
-        ;
+    stream.write_all(b"GET / HTTP/1.1\n").await?;
+    stream.write_all(b"Host: localhost:8080\n").await?;
+    stream.write_all(b"User-Agent: goku/0.0.1\n").await?;
+    stream.write_all(b"Accept: */*\n").await?;
+    stream.write_all(b"\n").await?;
 
-    // println!("{:?}", now.elapsed().as_millis());
+    Ok(())
 }
