@@ -1,4 +1,4 @@
-use std::time::{Duration, Instant};
+use std::time::Instant;
 
 use async_std::net::TcpStream;
 use async_std::prelude::*;
@@ -17,9 +17,7 @@ fn main() -> std::io::Result<()> {
     let now = Instant::now();
     task::spawn(async move {
         for _ in 0..REQUEST_AMMOUNT {
-            let handler = task::spawn(async {
-                send_request().await
-            });
+            let handler = task::spawn(async { send_request().await });
             s.send(handler).await;
         }
     });
@@ -30,7 +28,7 @@ fn main() -> std::io::Result<()> {
                 Err(e) => {
                     // ログに出す
                     println!("{}", e);
-                },
+                }
                 Ok(_) => count += 1,
             }
         }
