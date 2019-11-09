@@ -1,57 +1,79 @@
-use std::time::Instant;
-
-use async_std::net::TcpStream;
-use async_std::prelude::*;
-use async_std::sync::channel;
-use async_std::task;
+use clap::{
+    crate_authors, crate_description, crate_name, crate_version, App, AppSettings, Arg, ArgMatches,
+    SubCommand,
+};
 use env_logger as logger;
-use log::{debug, info};
+use url::Url;
 
-// TODO: change to command line arguments
-const MAX_CONNECTIONS: usize = 10;
-const REQUEST_AMMOUNT: usize = 10_000;
-
-fn main() -> std::io::Result<()> {
+fn main() -> goku::GokuResult<()> {
     std::env::set_var("RUST_LOG", "debug");
     logger::init();
 
-    let (s, r) = channel(MAX_CONNECTIONS);
-
-    let now = Instant::now();
-    let send_handler = task::spawn(async move {
-        for _ in 0..REQUEST_AMMOUNT {
-            let handler = task::spawn(async { send_request().await });
-            s.send(handler).await;
-        }
-    });
-
-    let receive_handler = task::spawn(async move {
-        let mut count = 0;
-        while let Some(v) = r.recv().await {
-            match v.await {
-                Err(e) => {
-                    debug!("{}", e);
-                }
-                Ok(_) => count += 1,
-            }
-        }
-        info!("count: {}", count);
-    });
-
-    task::block_on(async { async_std::future::join![send_handler, receive_handler].await });
-
-    info!("duration: {:?}", now.elapsed());
-
+    let mut app = build_app();
+    match app.clone().get_matches().subcommand() {
+        ("kamehameha", Some(matches)) => cmd_attack(matches)?,
+        ("help", Some(_)) | _ => app.print_help()?,
+    }
     Ok(())
 }
 
-async fn send_request() -> Result<(), async_std::io::Error> {
-    let mut stream = TcpStream::connect("127.0.0.1:8080").await?;
+fn cmd_attack(matches: &ArgMatches) -> goku::GokuResult<()> {
+    let concurrency = matches
+        .value_of("concurrency")
+        .unwrap_or_default()
+        .parse()?;
 
-    const HTTP_REQUEST: &'static [u8] =
-        b"GET / HTTP/1.1\nHost: localhost:8080\nUser-Agent: goku/0.0.1\n\n";
+    let requests = matches.value_of("requests").unwrap_or_default().parse()?;
+    let url = Url::parse(matches.value_of("url").unwrap_or_default())?;
 
-    stream.write_all(HTTP_REQUEST).await?;
+    let host = match url.host_str() {
+        Some(host) => host,
+        None => {
+            // TODO スキーマがなくてもパースできるようにしたい
+            println!("url parse error");
+            return Ok(());
+        }
+    };
 
-    Ok(())
+    let port = match url.port() {
+        Some(port) => port,
+        None => {
+            // TODO スキーマがなくてもパースできるようにしたい
+            println!("port parse error");
+            return Ok(());
+        }
+    };
+
+    goku::attack(concurrency, requests, host, port)
+}
+
+fn build_app() -> App<'static, 'static> {
+    App::new(crate_name!())
+        .version(crate_version!())
+        .about(crate_description!())
+        .author(crate_authors!())
+        .setting(AppSettings::DeriveDisplayOrder)
+        .subcommand(SubCommand::with_name("help").alias("h").about("Show help"))
+        .subcommand(
+            SubCommand::with_name("kamehameha")
+                .visible_alias("attack")
+                .about("Run load test")
+                .arg(Arg::with_name("url").help("Target url").required(true))
+                .arg(
+                    Arg::with_name("requests")
+                        .help("Number of requests to perform")
+                        .short("n")
+                        .long("requests")
+                        .value_name("requests")
+                        .required(true),
+                )
+                .arg(
+                    Arg::with_name("concurrency")
+                        .help("Number of multiple requests to make at a time")
+                        .short("c")
+                        .long("concurrency")
+                        .value_name("concurrency")
+                        .required(true),
+                ),
+        )
 }

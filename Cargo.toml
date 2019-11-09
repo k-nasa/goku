@@ -2,11 +2,18 @@
 name = "goku"
 version = "0.1.0"
 authors = ["k-nasa <htilcs1115@gmail.com>"]
+description = "goku is a HTTP load testing application written in Rust"
+keywords = ["cli"]
+repository = "https://github.com/k-nasa/goku"
+# license-file = "LICENSE"
+readme = "README.md"
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-async-std = { git="https://github.com/async-rs/async-std", features = ["unstable"] }
-log = "0.4.8"
+async-std = {version = "0.99.12", features = ["unstable"] }
+clap = "2.33.0"
 env_logger = "0.7.1"
+log = "0.4.8"
+url = "2.1.0"
