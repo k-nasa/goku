@@ -17,17 +17,16 @@ fn main() -> std::io::Result<()> {
 
     let (s, r) = channel(MAX_CONNECTIONS);
 
-    let mut count = 0;
-
     let now = Instant::now();
-    task::spawn(async move {
+    let send_handler = task::spawn(async move {
         for _ in 0..REQUEST_AMMOUNT {
             let handler = task::spawn(async { send_request().await });
             s.send(handler).await;
         }
     });
 
-    task::block_on(async {
+    let receive_handler = task::spawn(async move {
+        let mut count = 0;
         while let Some(v) = r.recv().await {
             match v.await {
                 Err(e) => {
@@ -36,9 +35,11 @@ fn main() -> std::io::Result<()> {
                 Ok(_) => count += 1,
             }
         }
+        info!("count: {}", count);
     });
 
-    info!("count: {}", count);
+    task::block_on(async { async_std::future::join![send_handler, receive_handler].await });
+
     info!("duration: {:?}", now.elapsed());
 
     Ok(())
