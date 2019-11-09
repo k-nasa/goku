@@ -57,4 +57,4 @@ jobs:
         rustc --version
 
     - name: Docs
-      run: cargo doc --features docs
+      run: cargo doc
