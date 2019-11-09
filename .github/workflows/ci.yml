@@ -42,7 +42,8 @@ jobs:
       uses: actions-rs/cargo@v1
       if: matrix.rust == 'nightly'
       with:
-        command: bench
+        command: build
+        args: --benches
 
   check_fmt_and_docs:
     name: Checking fmt and docs
