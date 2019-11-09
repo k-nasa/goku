@@ -2,9 +2,13 @@ use clap::{
     crate_authors, crate_description, crate_name, crate_version, App, AppSettings, Arg, ArgMatches,
     SubCommand,
 };
+use env_logger as logger;
 use url::Url;
 
 fn main() -> goku::GokuResult<()> {
+    std::env::set_var("RUST_LOG", "debug");
+    logger::init();
+
     let mut app = build_app();
     match app.clone().get_matches().subcommand() {
         ("kamehameha", Some(matches)) => cmd_attack(matches)?,
@@ -22,8 +26,8 @@ fn cmd_attack(matches: &ArgMatches) -> goku::GokuResult<()> {
     let requests = matches.value_of("requests").unwrap_or_default().parse()?;
     let url = Url::parse(matches.value_of("url").unwrap_or_default())?;
 
-    let url = match url.host_str() {
-        Some(url) => url,
+    let host = match url.host_str() {
+        Some(host) => host,
         None => {
             // TODO スキーマがなくてもパースできるようにしたい
             println!("url parse error");
@@ -31,7 +35,16 @@ fn cmd_attack(matches: &ArgMatches) -> goku::GokuResult<()> {
         }
     };
 
-    goku::attack(concurrency, requests, url)
+    let port = match url.port() {
+        Some(port) => port,
+        None => {
+            // TODO スキーマがなくてもパースできるようにしたい
+            println!("port parse error");
+            return Ok(());
+        }
+    };
+
+    goku::attack(concurrency, requests, host, port)
 }
 
 fn build_app() -> App<'static, 'static> {

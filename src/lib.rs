@@ -1,25 +1,34 @@
+use std::sync::Arc;
 use std::time::Instant;
 
 use async_std::net::TcpStream;
 use async_std::prelude::*;
 use async_std::sync::channel;
 use async_std::task;
-use env_logger as logger;
 use log::{debug, info};
 
 pub type GokuResult<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
 
-/// XXX Must use argument host
-pub fn attack(concurrency: usize, requests: usize, _host: &str) -> GokuResult<()> {
-    std::env::set_var("RUST_LOG", "debug");
-    logger::init();
+pub fn attack(concurrency: usize, requests: usize, host: &str, port: u16) -> GokuResult<()> {
+    let host = format!("{}:{}", host, port);
 
-    let (s, r) = channel(concurrency);
+    let request = format!(
+        "GET / HTTP/1.1\nHost: {}\nUser-Agent: goku/0.0.1\n\n",
+        host
+    );
 
     let now = Instant::now();
+    let (s, r) = channel(concurrency);
+
     let send_handler = task::spawn(async move {
+        let host = Arc::<str>::from(host);
+        let request = Arc::<str>::from(request);
+
         for _ in 0..requests {
-            let handler = task::spawn(send_request());
+            let host = host.to_string();
+            let request = request.to_string();
+
+            let handler = task::spawn(async move { send_request(&host, &request).await });
             s.send(handler).await;
         }
     });
@@ -44,17 +53,10 @@ pub fn attack(concurrency: usize, requests: usize, _host: &str) -> GokuResult<()
     Ok(())
 }
 
-async fn send_request() -> Result<(), async_std::io::Error> {
-    // TODO 引数でhostを取るように変更する
-    let mut stream = TcpStream::connect("127.0.0.1:8080").await?;
+pub async fn send_request(host: &str, request: &str) -> Result<(), async_std::io::Error> {
+    let mut stream = TcpStream::connect(host).await?;
 
-    let request = format!(
-        "GET / HTTP/1.1\nHost: {}\nUser-Agent: goku/0.0.1\n\n",
-        "localhost:8080"
-    )
-    .into_bytes();
-
-    stream.write_all(&request).await?;
+    stream.write(&request.as_bytes()).await?;
 
     Ok(())
 }
