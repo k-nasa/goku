@@ -12,10 +12,7 @@ pub type GokuResult<T> = std::result::Result<T, Box<dyn std::error::Error + Send
 pub fn attack(concurrency: usize, requests: usize, host: &str, port: u16) -> GokuResult<()> {
     let host = format!("{}:{}", host, port);
 
-    let request = format!(
-        "GET / HTTP/1.1\nHost: {}\nUser-Agent: goku/0.0.1\n\n",
-        host
-    );
+    let request = format!("GET / HTTP/1.1\nHost: {}\nUser-Agent: goku/0.0.1\n\n", host);
 
     let now = Instant::now();
     let (s, r) = channel(concurrency);
