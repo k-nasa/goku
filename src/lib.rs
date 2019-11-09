@@ -7,22 +7,19 @@ use async_std::task;
 use env_logger as logger;
 use log::{debug, info};
 
-// TODO: change to command line arguments
-const MAX_CONNECTIONS: usize = 10;
-const REQUEST_AMMOUNT: usize = 10_000;
-
 pub type GokuResult<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
 
-pub fn attack() -> GokuResult<()> {
+/// XXX Must use argument host
+pub fn attack(concurrency: usize, requests: usize, host: &str) -> GokuResult<()> {
     std::env::set_var("RUST_LOG", "debug");
     logger::init();
 
-    let (s, r) = channel(MAX_CONNECTIONS);
+    let (s, r) = channel(concurrency);
 
     let now = Instant::now();
     let send_handler = task::spawn(async move {
-        for _ in 0..REQUEST_AMMOUNT {
-            let handler = task::spawn(async { send_request().await });
+        for _ in 0..requests {
+            let handler = task::spawn(send_request());
             s.send(handler).await;
         }
     });
