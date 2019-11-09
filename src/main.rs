@@ -4,12 +4,17 @@ use async_std::net::TcpStream;
 use async_std::prelude::*;
 use async_std::sync::channel;
 use async_std::task;
+use env_logger as logger;
+use log::{debug, info};
 
 // TODO: change to command line arguments
 const MAX_CONNECTIONS: usize = 100;
 const REQUEST_AMMOUNT: usize = 10_000;
 
 fn main() -> std::io::Result<()> {
+    std::env::set_var("RUST_LOG", "debug");
+    logger::init();
+
     let (s, r) = channel(MAX_CONNECTIONS);
 
     let mut count = 0;
@@ -26,16 +31,15 @@ fn main() -> std::io::Result<()> {
         while let Some(v) = r.recv().await {
             match v.await {
                 Err(e) => {
-                    // ログに出す
-                    println!("{}", e);
+                    debug!("{}", e);
                 }
                 Ok(_) => count += 1,
             }
         }
     });
 
-    println!("count: {}", count);
-    println!("duration: {:?}", now.elapsed());
+    info!("count: {}", count);
+    info!("duration: {:?}", now.elapsed());
 
     Ok(())
 }
