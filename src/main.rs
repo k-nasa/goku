@@ -6,7 +6,7 @@ use async_std::sync::channel;
 use async_std::task;
 
 // TODO: change to command line arguments
-const MAX_CONNECTIONS: usize = 10;
+const MAX_CONNECTIONS: usize = 100;
 const REQUEST_AMMOUNT: usize = 10_000;
 
 fn main() -> std::io::Result<()> {
@@ -28,7 +28,8 @@ fn main() -> std::io::Result<()> {
         while let Some(v) = r.recv().await {
             match v.await {
                 Err(e) => {
-                    println!("{}", e)
+                    // ログに出す
+                    println!("{}", e);
                 },
                 Ok(_) => count += 1,
             }
