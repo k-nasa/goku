@@ -10,3 +10,4 @@ edition = "2018"
 async-std = { git="https://github.com/async-rs/async-std", features = ["unstable"] }
 log = "0.4.8"
 env_logger = "0.7.1"
+clap = "2.33.0"
