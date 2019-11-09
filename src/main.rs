@@ -2,7 +2,7 @@ use clap::{
     crate_authors, crate_description, crate_name, crate_version, App, AppSettings, Arg, ArgMatches,
     SubCommand,
 };
-use url::{Host, Position, Url};
+use url::Url;
 
 fn main() -> goku::GokuResult<()> {
     let mut app = build_app();
