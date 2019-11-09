@@ -10,7 +10,7 @@ use log::{debug, info};
 pub type GokuResult<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
 
 /// XXX Must use argument host
-pub fn attack(concurrency: usize, requests: usize, host: &str) -> GokuResult<()> {
+pub fn attack(concurrency: usize, requests: usize, _host: &str) -> GokuResult<()> {
     std::env::set_var("RUST_LOG", "debug");
     logger::init();
 
@@ -48,10 +48,13 @@ async fn send_request() -> Result<(), async_std::io::Error> {
     // TODO 引数でhostを取るように変更する
     let mut stream = TcpStream::connect("127.0.0.1:8080").await?;
 
-    const HTTP_REQUEST: &'static [u8] =
-        b"GET / HTTP/1.1\nHost: localhost:8080\nUser-Agent: goku/0.0.1\n\n";
+    let request = format!(
+        "GET / HTTP/1.1\nHost: {}\nUser-Agent: goku/0.0.1\n\n",
+        "localhost:8080"
+    )
+    .into_bytes();
 
-    stream.write_all(HTTP_REQUEST).await?;
+    stream.write_all(&request).await?;
 
     Ok(())
 }
