@@ -1,57 +1,27 @@
-use std::time::Instant;
+use clap::{
+    crate_authors, crate_description, crate_name, crate_version, App, AppSettings, Arg, SubCommand,
+};
 
-use async_std::net::TcpStream;
-use async_std::prelude::*;
-use async_std::sync::channel;
-use async_std::task;
-use env_logger as logger;
-use log::{debug, info};
-
-// TODO: change to command line arguments
-const MAX_CONNECTIONS: usize = 10;
-const REQUEST_AMMOUNT: usize = 10_000;
-
-fn main() -> std::io::Result<()> {
-    std::env::set_var("RUST_LOG", "debug");
-    logger::init();
-
-    let (s, r) = channel(MAX_CONNECTIONS);
-
-    let now = Instant::now();
-    let send_handler = task::spawn(async move {
-        for _ in 0..REQUEST_AMMOUNT {
-            let handler = task::spawn(async { send_request().await });
-            s.send(handler).await;
-        }
-    });
-
-    let receive_handler = task::spawn(async move {
-        let mut count = 0;
-        while let Some(v) = r.recv().await {
-            match v.await {
-                Err(e) => {
-                    debug!("{}", e);
-                }
-                Ok(_) => count += 1,
-            }
-        }
-        info!("count: {}", count);
-    });
-
-    task::block_on(async { async_std::future::join![send_handler, receive_handler].await });
-
-    info!("duration: {:?}", now.elapsed());
-
+fn main() -> goku::GokuResult<()> {
+    let mut app = build_app();
+    match app.clone().get_matches().subcommand() {
+        ("kamehameha", Some(_)) => goku::attack()?,
+        ("help", Some(_)) | _ => app.print_help()?,
+    }
     Ok(())
 }
 
-async fn send_request() -> Result<(), async_std::io::Error> {
-    let mut stream = TcpStream::connect("127.0.0.1:8080").await?;
-
-    const HTTP_REQUEST: &'static [u8] =
-        b"GET / HTTP/1.1\nHost: localhost:8080\nUser-Agent: goku/0.0.1\n\n";
-
-    stream.write_all(HTTP_REQUEST).await?;
-
-    Ok(())
+fn build_app() -> App<'static, 'static> {
+    App::new(crate_name!())
+        .version(crate_version!())
+        .about(crate_description!())
+        .author(crate_authors!())
+        .setting(AppSettings::DeriveDisplayOrder)
+        .subcommand(SubCommand::with_name("help").alias("h").about("Show help"))
+        .subcommand(
+            SubCommand::with_name("kamehameha")
+                .visible_alias("attack")
+                .about("Run load test")
+                .arg(Arg::with_name("url").help("Target url").required(true)),
+        )
 }
