@@ -25,6 +25,7 @@ fn cmd_attack(matches: &ArgMatches) -> goku::GokuResult<()> {
     let url = match url.host_str() {
         Some(url) => url,
         None => {
+            // TODO スキーマがなくてもパースできるようにしたい
             println!("url parse error");
             return Ok(());
         }

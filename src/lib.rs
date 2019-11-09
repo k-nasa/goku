@@ -45,6 +45,7 @@ pub fn attack(concurrency: usize, requests: usize, host: &str) -> GokuResult<()>
 }
 
 async fn send_request() -> Result<(), async_std::io::Error> {
+    // TODO 引数でhostを取るように変更する
     let mut stream = TcpStream::connect("127.0.0.1:8080").await?;
 
     const HTTP_REQUEST: &'static [u8] =
