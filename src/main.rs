@@ -46,7 +46,14 @@ fn cmd_attack(matches: &ArgMatches) -> goku::GokuResult<()> {
 
     let report = goku::attack(concurrency, requests, host, port)?;
 
-    println!("{}", report);
+    let output_format = matches.value_of("output");
+
+    if output_format == Some("json") {
+        let j = serde_json::to_string(&report).unwrap_or_default();
+        println!("{}", j);
+    } else {
+        println!("{}", report);
+    }
 
     Ok(())
 }
@@ -81,9 +88,10 @@ fn build_app() -> App<'static, 'static> {
                 )
                 .arg(
                     Arg::with_name("output")
-                        .help("Output format. [text(default), json]")
+                        .help("Output format.")
                         .short("o")
                         .long("output")
+                        .possible_values(&["text", "json"])
                         .value_name("output"),
                 ),
         )
