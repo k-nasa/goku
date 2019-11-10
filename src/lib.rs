@@ -1,5 +1,5 @@
 use std::sync::Arc;
-use std::time::{Instant, Duration};
+use std::time::{Duration, Instant};
 
 use async_std::net::TcpStream;
 use async_std::prelude::*;
@@ -59,10 +59,19 @@ pub fn attack(concurrency: usize, requests: usize, host: &str, port: u16) -> Gok
         println!("Failed requests:        {}", errors.iter().count());
         println!("Total transferred:      {} bytes", all_bytes);
         println!("Latency:");
-        println!("    max: {:?}", all_time.iter().max().unwrap_or(&Duration::new(0,0)));
-        println!("    min: {:?}", all_time.iter().min().unwrap_or(&Duration::new(0,0)));
+        println!(
+            "    max: {:?}",
+            all_time.iter().max().unwrap_or(&Duration::new(0, 0))
+        );
+        println!(
+            "    min: {:?}",
+            all_time.iter().min().unwrap_or(&Duration::new(0, 0))
+        );
         println!("    ave: {:?}", all_time.iter().sum::<Duration>() / count);
-        println!("    ave: {:?} (mean, across all concurrent requests)", duration / count);
+        println!(
+            "    ave: {:?} (mean, across all concurrent requests)",
+            duration / count
+        );
     });
 
     task::block_on(async { async_std::future::join![send_handler, receive_handler].await });
@@ -71,7 +80,10 @@ pub fn attack(concurrency: usize, requests: usize, host: &str, port: u16) -> Gok
 }
 
 type ByteSize = usize;
-pub async fn send_request(host: &str, request: &str) -> Result<(Duration, ByteSize), async_std::io::Error> {
+pub async fn send_request(
+    host: &str,
+    request: &str,
+) -> Result<(Duration, ByteSize), async_std::io::Error> {
     let now = Instant::now();
 
     let mut stream = TcpStream::connect(host).await?;
