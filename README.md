@@ -4,6 +4,7 @@
 
 ## Overview
 [![Actions Status](https://github.com/k-nasa/goku/workflows/CI/badge.svg)](https://github.com/k-nasa/goku/actions)
+[![crate-name at crates.io](https://img.shields.io/crates/v/goku.svg)](https://crates.io/crates/goku)
 
 
 goku is a HTTP load testing application written in Rust
