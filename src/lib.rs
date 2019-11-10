@@ -1,11 +1,12 @@
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
-use serde::{Deserialize, Serialize};
 use async_std::net::TcpStream;
 use async_std::prelude::*;
 use async_std::sync::channel;
 use async_std::task;
+use indicatif::{ProgressBar, ProgressStyle};
+use serde::{Deserialize, Serialize};
 
 pub type GokuResult<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
 
@@ -17,6 +18,7 @@ pub struct GokuReport {
     complete_requests: usize,
     failed_requests: usize,
     total_transferred: usize,
+    total_time: Duration,
     latency_max: Duration,
     latency_min: Duration,
     latency_ave: Duration,
@@ -39,6 +41,7 @@ Time taken for tests:   {:?}
 Complete requests:      {}
 Failed requests:        {}
 Total transferred:      {} bytes
+Total request time:     {:?}
 Latency:
   max: {:?}
   min: {:?}
@@ -49,6 +52,7 @@ Latency:
             self.complete_requests,
             self.failed_requests,
             self.total_transferred,
+            self.total_time,
             self.latency_max,
             self.latency_min,
             self.latency_ave,
@@ -57,7 +61,12 @@ Latency:
     }
 }
 
-pub fn attack(concurrency: usize, requests: usize, host: &str, port: u16) -> GokuResult<GokuReport> {
+pub fn attack(
+    concurrency: usize,
+    requests: usize,
+    host: &str,
+    port: u16,
+) -> GokuResult<GokuReport> {
     let host = format!("{}:{}", host, port);
 
     let request = format!("GET / HTTP/1.1\nHost: {}\nUser-Agent: goku/0.0.1\n\n", host);
@@ -84,6 +93,17 @@ pub fn attack(concurrency: usize, requests: usize, host: &str, port: u16) -> Gok
         let mut all_bytes = 0;
         let mut errors = Vec::new();
 
+        let pb = Arc::new(ProgressBar::new(requests as u64));
+        let mut position = 0;
+        pb.set_style(
+            ProgressStyle::default_bar()
+                .template(
+                    "{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {percent}% ({eta})",
+                )
+                .progress_chars("#>-"),
+        );
+        pb.finish_with_message("finished");
+
         while let Some(v) = r.recv().await {
             match v.await {
                 Err(e) => {
@@ -95,28 +115,38 @@ pub fn attack(concurrency: usize, requests: usize, host: &str, port: u16) -> Gok
                     all_bytes += result.1;
                 }
             }
+            position += 1;
+            pb.set_position(position);
         }
 
         let duration = now.elapsed();
 
-        let report = GokuReport {
+        let (latency_ave, latency_ave_concurrency) = if count == 0 {
+            (Duration::new(0, 0), Duration::new(0, 0))
+        } else {
+            (
+                all_time.iter().sum::<Duration>() / count as u32,
+                duration / count as u32,
+            )
+        };
+
+        GokuReport {
             errors: errors.iter().map(|e| e.to_string()).collect(),
             concurrency_level: concurrency,
             time_taken_test: duration,
             complete_requests: count,
             failed_requests: errors.iter().count(),
             total_transferred: all_bytes,
+            total_time: all_time.iter().sum::<Duration>(),
             latency_max: *all_time.iter().max().unwrap_or(&Duration::new(0, 0)),
             latency_min: *all_time.iter().min().unwrap_or(&Duration::new(0, 0)),
-            latency_ave: all_time.iter().sum::<Duration>() / count as u32,
-            latency_ave_concurrency: duration / count as u32,
-
-        };
-
-        report
+            latency_ave,
+            latency_ave_concurrency,
+        }
     });
 
-    let (_, report) = task::block_on(async { async_std::future::join![send_handler, receive_handler].await });
+    let (_, report) =
+        task::block_on(async { async_std::future::join![send_handler, receive_handler].await });
 
     Ok(report)
 }
@@ -132,7 +162,7 @@ pub async fn send_request(
 
     stream.write(&request.as_bytes()).await?;
 
-    let mut buffer = vec![0u8; 102400];
+    let mut buffer = vec![0u8; 1024];
     let n = stream.read(&mut buffer).await?;
     // let res = buffer.iter().filter(|s| **s != 0).map(|&s| s as char).collect::<String>();
     // println!("{}", n);
