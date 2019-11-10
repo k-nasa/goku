@@ -20,7 +20,8 @@ fn send_request_bench(b: &mut Bencher) {
     let request = format!("GET / HTTP/1.1\nHost: {}\nUser-Agent: goku/0.0.1\n\n", host);
     b.iter(|| {
         async_std::task::block_on(async {
-            send_request(&host, &request).await.unwrap();
+            #![allow(unused_must_use)]
+            send_request(&host, &request).await;
         })
     });
 }
