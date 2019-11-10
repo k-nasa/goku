@@ -1,5 +1,5 @@
 use clap::{
-    crate_authors, crate_description, crate_name, crate_version, App, AppSettings, Arg, ArgMatches,
+    crate_description, crate_name, crate_version, App, AppSettings, Arg, ArgMatches,
     SubCommand,
 };
 use env_logger as logger;
