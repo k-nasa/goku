@@ -5,9 +5,49 @@ use async_std::net::TcpStream;
 use async_std::prelude::*;
 use async_std::sync::channel;
 use async_std::task;
-use log::{debug, info};
+use log::debug;
 
 pub type GokuResult<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
+
+#[derive(Debug, Clone)]
+pub struct GokuReport {
+    concurrency_level: usize,
+    time_taken_test: Duration,
+    complete_requests: usize,
+    failed_requests: usize,
+    total_transferred: usize,
+    latency_max: Duration,
+    latency_min: Duration,
+    latency_ave: Duration,
+    latency_ave_concurrency: Duration,
+}
+
+impl std::fmt::Display for GokuReport {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "Concurrency Level {}
+Time taken for tests:   {:?}
+Complete requests:      {}
+Failed requests:        {}
+Total transferred:      {} bytes
+Latency:
+  max: {:?}
+  min: {:?}
+  ave: {:?}
+  ave: {:?} (mean, across all concurrent requests)",
+            self.concurrency_level,
+            self.time_taken_test,
+            self.complete_requests,
+            self.failed_requests,
+            self.total_transferred,
+            self.latency_max,
+            self.latency_min,
+            self.latency_ave,
+            self.latency_ave_concurrency
+        )
+    }
+}
 
 pub fn attack(concurrency: usize, requests: usize, host: &str, port: u16) -> GokuResult<()> {
     let host = format!("{}:{}", host, port);
@@ -52,26 +92,20 @@ pub fn attack(concurrency: usize, requests: usize, host: &str, port: u16) -> Gok
         let duration = now.elapsed();
 
         errors.iter().for_each(|e| debug!("{}", e));
-        println!("");
-        println!("Concurrency Level:      {}", concurrency);
-        println!("Time taken for tests:   {:?}", duration);
-        println!("Complete requests:      {}", count);
-        println!("Failed requests:        {}", errors.iter().count());
-        println!("Total transferred:      {} bytes", all_bytes);
-        println!("Latency:");
-        println!(
-            "    max: {:?}",
-            all_time.iter().max().unwrap_or(&Duration::new(0, 0))
-        );
-        println!(
-            "    min: {:?}",
-            all_time.iter().min().unwrap_or(&Duration::new(0, 0))
-        );
-        println!("    ave: {:?}", all_time.iter().sum::<Duration>() / count);
-        println!(
-            "    ave: {:?} (mean, across all concurrent requests)",
-            duration / count
-        );
+        let report = GokuReport {
+            concurrency_level: concurrency,
+            time_taken_test: duration,
+            complete_requests: count,
+            failed_requests: errors.iter().count(),
+            total_transferred: all_bytes,
+            latency_max: *all_time.iter().max().unwrap_or(&Duration::new(0, 0)),
+            latency_min: *all_time.iter().min().unwrap_or(&Duration::new(0, 0)),
+            latency_ave: all_time.iter().sum::<Duration>() / count as u32,
+            latency_ave_concurrency: duration / count as u32,
+
+        };
+
+        println!("{}", report);
     });
 
     task::block_on(async { async_std::future::join![send_handler, receive_handler].await });
