@@ -18,6 +18,7 @@ pub struct GokuReport {
     complete_requests: usize,
     failed_requests: usize,
     total_transferred: usize,
+    total_time: Duration,
     latency_max: Duration,
     latency_min: Duration,
     latency_ave: Duration,
@@ -40,6 +41,7 @@ Time taken for tests:   {:?}
 Complete requests:      {}
 Failed requests:        {}
 Total transferred:      {} bytes
+Total request time:     {:?}
 Latency:
   max: {:?}
   min: {:?}
@@ -50,6 +52,7 @@ Latency:
             self.complete_requests,
             self.failed_requests,
             self.total_transferred,
+            self.total_time,
             self.latency_max,
             self.latency_min,
             self.latency_ave,
@@ -134,6 +137,7 @@ pub fn attack(
             complete_requests: count,
             failed_requests: errors.iter().count(),
             total_transferred: all_bytes,
+            total_time: all_time.iter().sum::<Duration>(),
             latency_max: *all_time.iter().max().unwrap_or(&Duration::new(0, 0)),
             latency_min: *all_time.iter().min().unwrap_or(&Duration::new(0, 0)),
             latency_ave,
