@@ -16,10 +16,38 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
-        rust: [nightly, beta]
+        rust: [nightly, beta, stable]
 
     steps:
     - uses: actions/checkout@master
+
+    - name: Cache cargo registry
+      if: matrix.os != 'windows-latest'
+      uses: actions/cache@v1
+      with:
+        path: ~/.cargo/registry
+        key: ${{ runner.os }}-${{ matrix.rust }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}-
+
+    - name: Cache cargo registry (on Windows)
+      if: matrix.os == 'windows-latest'
+      uses: actions/cache@v1
+      with:
+        path: ~/.cargo/registry
+        key: ${{ runner.os }}-${{ matrix.rust }}-cargo-registry-${{ hashFiles('**\Cargo.lock') }}-
+
+    - name: Cache target
+      if: matrix.os != 'windows-latest'
+      uses: actions/cache@v1
+      with:
+        path: target
+        key: ${{ runner.os }}-${{ matrix.rust }}-target-${{ hashFiles('**/Cargo.lock') }}-
+
+    - name: Cache build (on Windows)
+      if: matrix.os == 'windows-latest'
+      uses: actions/cache@v1
+      with:
+        path: target
+        key: ${{ runner.os }}-${{ matrix.rust }}-target-${{ hashFiles('**\Cargo.lock') }}-
 
     - name: Install ${{ matrix.rust }}
       uses: actions-rs/toolchain@v1
