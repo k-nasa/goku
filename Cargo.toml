@@ -5,7 +5,7 @@ authors = ["k-nasa <htilcs1115@gmail.com>"]
 description = "goku is a HTTP load testing application written in Rust"
 keywords = ["cli"]
 repository = "https://github.com/k-nasa/goku"
-# license-file = "LICENSE"
+license-file = "LICENSE"
 readme = "README.md"
 edition = "2018"
 
