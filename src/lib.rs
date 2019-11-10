@@ -33,6 +33,7 @@ pub fn attack(concurrency: usize, requests: usize, host: &str, port: u16) -> Gok
     let receive_handler = task::spawn(async move {
         let mut count = 0;
         let mut all_time = Vec::new();
+        let mut all_bytes = 0;
         let mut errors = Vec::new();
 
         while let Some(v) = r.recv().await {
@@ -40,21 +41,28 @@ pub fn attack(concurrency: usize, requests: usize, host: &str, port: u16) -> Gok
                 Err(e) => {
                     errors.push(e);
                 }
-                Ok(duration) => {
+                Ok(result) => {
                     count += 1;
-                    all_time.push(duration);
+                    all_time.push(result.0);
+                    all_bytes += result.1;
                 }
             }
         }
 
+        let duration = now.elapsed();
+
         errors.iter().for_each(|e| debug!("{}", e));
-        println!("Complete requests: {}", count);
-        println!("Failed requests:   {}", errors.iter().count());
+        println!("");
+        println!("Concurrency Level:      {}", concurrency);
+        println!("Time taken for tests:   {:?}", duration);
+        println!("Complete requests:      {}", count);
+        println!("Failed requests:        {}", errors.iter().count());
+        println!("Total transferred:      {} bytes", all_bytes);
         println!("Latency:");
         println!("    max: {:?}", all_time.iter().max().unwrap_or(&Duration::new(0,0)));
         println!("    min: {:?}", all_time.iter().min().unwrap_or(&Duration::new(0,0)));
         println!("    ave: {:?}", all_time.iter().sum::<Duration>() / count);
-        println!("    ave: {:?} (mean, across all concurrent requests)", now.elapsed() / count);
+        println!("    ave: {:?} (mean, across all concurrent requests)", duration / count);
     });
 
     task::block_on(async { async_std::future::join![send_handler, receive_handler].await });
@@ -62,12 +70,18 @@ pub fn attack(concurrency: usize, requests: usize, host: &str, port: u16) -> Gok
     Ok(())
 }
 
-pub async fn send_request(host: &str, request: &str) -> Result<Duration, async_std::io::Error> {
+type ByteSize = usize;
+pub async fn send_request(host: &str, request: &str) -> Result<(Duration, ByteSize), async_std::io::Error> {
     let now = Instant::now();
 
     let mut stream = TcpStream::connect(host).await?;
 
     stream.write(&request.as_bytes()).await?;
 
-    Ok(now.elapsed())
+    let mut buffer = vec![0u8; 102400];
+    let n = stream.read(&mut buffer).await?;
+    // let res = buffer.iter().filter(|s| **s != 0).map(|&s| s as char).collect::<String>();
+    // println!("{}", n);
+
+    Ok((now.elapsed(), n))
 }
