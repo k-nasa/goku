@@ -1,6 +1,7 @@
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
+use serde::{Deserialize, Serialize};
 use async_std::net::TcpStream;
 use async_std::prelude::*;
 use async_std::sync::channel;
@@ -9,7 +10,7 @@ use log::debug;
 
 pub type GokuResult<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GokuReport {
     concurrency_level: usize,
     time_taken_test: Duration,
