@@ -1,6 +1,6 @@
 # goku
 
-![goku](https://i.pinimg.com/originals/3e/4f/25/3e4f25362a84f7499ecd607b6ecc1183.jpg)
+![goku](https://user-images.githubusercontent.com/23740172/68545732-1ae00480-0413-11ea-8db9-3ceaafdb3b91.jpg)
 
 ## Overview
 [![Actions Status](https://github.com/k-nasa/goku/workflows/CI/badge.svg)](https://github.com/k-nasa/goku/actions)
@@ -9,6 +9,11 @@
 goku is a HTTP load testing application written in Rust
 
 (This is inspired by [vegeta](https://github.com/tsenart/vegeta)!)
+
+## Demo
+
+![goku](https://user-images.githubusercontent.com/23740172/68545671-92616400-0412-11ea-86f3-dba3a80f2227.gif)
+
 
 ## Installation
 
