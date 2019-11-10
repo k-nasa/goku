@@ -78,6 +78,13 @@ fn build_app() -> App<'static, 'static> {
                         .long("concurrency")
                         .value_name("concurrency")
                         .required(true),
+                )
+                .arg(
+                    Arg::with_name("output")
+                        .help("Output format. [text(default), json]")
+                        .short("o")
+                        .long("output")
+                        .value_name("output"),
                 ),
         )
 }
