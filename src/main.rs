@@ -44,7 +44,11 @@ fn cmd_attack(matches: &ArgMatches) -> goku::GokuResult<()> {
         }
     };
 
-    goku::attack(concurrency, requests, host, port)
+    let report = goku::attack(concurrency, requests, host, port)?;
+
+    println!("{}", report);
+
+    Ok(())
 }
 
 fn build_app() -> App<'static, 'static> {

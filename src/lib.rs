@@ -49,7 +49,7 @@ Latency:
     }
 }
 
-pub fn attack(concurrency: usize, requests: usize, host: &str, port: u16) -> GokuResult<()> {
+pub fn attack(concurrency: usize, requests: usize, host: &str, port: u16) -> GokuResult<GokuReport> {
     let host = format!("{}:{}", host, port);
 
     let request = format!("GET / HTTP/1.1\nHost: {}\nUser-Agent: goku/0.0.1\n\n", host);
@@ -105,12 +105,12 @@ pub fn attack(concurrency: usize, requests: usize, host: &str, port: u16) -> Gok
 
         };
 
-        println!("{}", report);
+        report
     });
 
-    task::block_on(async { async_std::future::join![send_handler, receive_handler].await });
+    let (_, report) = task::block_on(async { async_std::future::join![send_handler, receive_handler].await });
 
-    Ok(())
+    Ok(report)
 }
 
 type ByteSize = usize;
