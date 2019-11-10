@@ -15,12 +15,9 @@ fn attack_bench(b: &mut Bencher) {
 
 #[bench]
 fn send_request_bench(b: &mut Bencher) {
-    let request = format!(
-        "GET / HTTP/1.1\nHost: {}\nUser-Agent: goku/0.0.1\n\n",
-        "localhost:8080"
-    );
-
     let host = format!("{}:{}", "127.0.0.1", "8080");
+
+    let request = format!("GET / HTTP/1.1\nHost: {}\nUser-Agent: goku/0.0.1\n\n", host);
     b.iter(|| {
         async_std::task::block_on(async {
             send_request(&host, &request).await.unwrap();

@@ -1,5 +1,5 @@
 use std::sync::Arc;
-use std::time::Instant;
+use std::time::{Instant, Duration};
 
 use async_std::net::TcpStream;
 use async_std::prelude::*;
@@ -32,28 +32,42 @@ pub fn attack(concurrency: usize, requests: usize, host: &str, port: u16) -> Gok
 
     let receive_handler = task::spawn(async move {
         let mut count = 0;
+        let mut all_time = Vec::new();
+        let mut errors = Vec::new();
+
         while let Some(v) = r.recv().await {
             match v.await {
                 Err(e) => {
-                    debug!("{}", e);
+                    errors.push(e);
                 }
-                Ok(_) => count += 1,
+                Ok(duration) => {
+                    count += 1;
+                    all_time.push(duration);
+                }
             }
         }
-        info!("count: {}", count);
+
+        errors.iter().for_each(|e| debug!("{}", e));
+        println!("Complete requests: {}", count);
+        println!("Failed requests:   {}", errors.iter().count());
+        println!("Latency:");
+        println!("    max: {:?}", all_time.iter().max().unwrap_or(&Duration::new(0,0)));
+        println!("    min: {:?}", all_time.iter().min().unwrap_or(&Duration::new(0,0)));
+        println!("    ave: {:?}", all_time.iter().sum::<Duration>() / count);
+        println!("    ave: {:?} (mean, across all concurrent requests)", now.elapsed() / count);
     });
 
     task::block_on(async { async_std::future::join![send_handler, receive_handler].await });
 
-    info!("duration: {:?}", now.elapsed());
-
     Ok(())
 }
 
-pub async fn send_request(host: &str, request: &str) -> Result<(), async_std::io::Error> {
+pub async fn send_request(host: &str, request: &str) -> Result<Duration, async_std::io::Error> {
+    let now = Instant::now();
+
     let mut stream = TcpStream::connect(host).await?;
 
     stream.write(&request.as_bytes()).await?;
 
-    Ok(())
+    Ok(now.elapsed())
 }
