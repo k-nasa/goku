@@ -6,12 +6,12 @@ use async_std::net::TcpStream;
 use async_std::prelude::*;
 use async_std::sync::channel;
 use async_std::task;
-use log::debug;
 
 pub type GokuResult<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GokuReport {
+    errors: Vec<String>,
     concurrency_level: usize,
     time_taken_test: Duration,
     complete_requests: usize,
@@ -21,6 +21,12 @@ pub struct GokuReport {
     latency_min: Duration,
     latency_ave: Duration,
     latency_ave_concurrency: Duration,
+}
+
+impl GokuReport {
+    pub fn errors(&self) -> Vec<String> {
+        self.errors.clone()
+    }
 }
 
 impl std::fmt::Display for GokuReport {
@@ -93,8 +99,8 @@ pub fn attack(concurrency: usize, requests: usize, host: &str, port: u16) -> Gok
 
         let duration = now.elapsed();
 
-        errors.iter().for_each(|e| debug!("{}", e));
         let report = GokuReport {
+            errors: errors.iter().map(|e| e.to_string()).collect(),
             concurrency_level: concurrency,
             time_taken_test: duration,
             complete_requests: count,

@@ -47,11 +47,14 @@ fn cmd_attack(matches: &ArgMatches) -> goku::GokuResult<()> {
     let report = goku::attack(concurrency, requests, host, port)?;
 
     let output_format = matches.value_of("output");
-
     if output_format == Some("json") {
         let j = serde_json::to_string(&report).unwrap_or_default();
         println!("{}", j);
     } else {
+        if matches.is_present("verbose") {
+            report.errors().iter().for_each(|e| println!("{}", e));
+        }
+
         println!("{}", report);
     }
 
@@ -93,6 +96,12 @@ fn build_app() -> App<'static, 'static> {
                         .long("output")
                         .possible_values(&["text", "json"])
                         .value_name("output"),
+                )
+                .arg(
+                    Arg::with_name("verbose")
+                        .help("Output all message")
+                        .short("v")
+                        .long("verbose"),
                 ),
         )
 }
