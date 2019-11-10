@@ -16,10 +16,72 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
-        rust: [nightly, beta]
+        rust: [nightly, beta, stable]
 
     steps:
     - uses: actions/checkout@master
+
+    - name: Cache rustup
+      uses: actions/cache@v1
+      with:
+        path: ~/.rustup
+        key: ${{runner.os}}-${{matrix.rust}}-toolchain
+
+    - name: Cache cargo registry
+      if: matrix.os != 'windows-latest'
+      uses: actions/cache@v1
+      with:
+        path: ~/.cargo/registry
+        key: ${{ runner.os }}-${{ matrix.rust }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}-
+
+    - name: Cache deps crates
+      if: matrix.os != 'windows-latest'
+      uses: actions/cache@v1
+      with:
+        path: target/debug/deps
+        key: ${{ runner.os }}-${{ matrix.rust }}-target-deps-${{ hashFiles('**/Cargo.lock') }}-
+
+    - name: Cache build
+      if: matrix.os != 'windows-latest'
+      uses: actions/cache@v1
+      with:
+        path: target/debug/build
+        key: ${{ runner.os }}-${{ matrix.rust }}-target-build-${{ hashFiles('**/Cargo.lock') }}-
+
+    - name: Cache build
+      if: matrix.os != 'windows-latest'
+      uses: actions/cache@v1
+      with:
+        path: target/debug/.fingerprint
+        key: ${{ runner.os }}-${{ matrix.rust }}-target-fingerprint-${{ hashFiles('**/Cargo.lock') }}-
+
+    - name: Cache cargo registry (on Windows)
+      if: matrix.os == 'windows-latest'
+      uses: actions/cache@v1
+      with:
+        path: ~/.cargo/registry
+        key: ${{ runner.os }}-${{ matrix.rust }}-cargo-registry-${{ hashFiles('**\Cargo.lock') }}-
+
+    - name: Cache deps crates (on Windows)
+      if: matrix.os == 'windows-latest'
+      uses: actions/cache@v1
+      with:
+        path: target/debug/deps
+        key: ${{ runner.os }}-${{ matrix.rust }}-target-deps-${{ hashFiles('**\Cargo.lock') }}-
+
+    - name: Cache build (on Windows)
+      if: matrix.os == 'windows-latest'
+      uses: actions/cache@v1
+      with:
+        path: target/debug/build
+        key: ${{ runner.os }}-${{ matrix.rust }}-target-build-${{ hashFiles('**\Cargo.lock') }}-
+
+    - name: Cache build (on Windows)
+      if: matrix.os == 'windows-latest'
+      uses: actions/cache@v1
+      with:
+        path: target/debug/.fingerprint
+        key: ${{ runner.os }}-${{ matrix.rust }}-target-fingerprint-${{ hashFiles('**\Cargo.lock') }}-
 
     - name: Install ${{ matrix.rust }}
       uses: actions-rs/toolchain@v1
