@@ -83,9 +83,9 @@ goku kamehameha -c 10 -n 10000 'http://127.0.0.1:8080' -o json | jq .
 4. Push to the branch (git push origin my-new-feature)
 5. Create new Pull Request
 
-## Licence
+## License
 
-[MIT](https://github.com/k-nasa/goku/blob/master/LICENCE)
+[MIT](https://github.com/k-nasa/goku/blob/master/LICENSE)
 
 ## Author
 

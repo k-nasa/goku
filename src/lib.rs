@@ -1,7 +1,7 @@
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
-use async_std::net::TcpStream;
+use async_std::net::{ TcpStream, ToSocketAddrs};
 use async_std::prelude::*;
 use async_std::sync::channel;
 use async_std::task;
@@ -153,7 +153,7 @@ pub fn attack(
 
 type ByteSize = usize;
 pub async fn send_request(
-    host: &str,
+    host: impl ToSocketAddrs,
     request: &str,
 ) -> Result<(Duration, ByteSize), async_std::io::Error> {
     let now = Instant::now();

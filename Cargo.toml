@@ -6,7 +6,7 @@ description = "goku is a HTTP load testing application written in Rust"
 keywords = ["cli", "goku", "load-testing", "performance", "http"]
 categories = ["command-line-utilities", "development-tools::profiling"]
 repository = "https://github.com/k-nasa/goku"
-license-file = "LICENSE"
+license="MIT"
 readme = "README.md"
 edition = "2018"
 

@@ -1,6 +1,5 @@
 use clap::{
-    crate_description, crate_name, crate_version, App, AppSettings, Arg, ArgMatches,
-    SubCommand,
+    crate_description, crate_name, crate_version, App, AppSettings, Arg, ArgMatches, SubCommand,
 };
 use env_logger as logger;
 use url::Url;
@@ -35,14 +34,7 @@ fn cmd_attack(matches: &ArgMatches) -> goku::GokuResult<()> {
         }
     };
 
-    let port = match url.port() {
-        Some(port) => port,
-        None => {
-            // TODO スキーマがなくてもパースできるようにしたい
-            println!("port parse error");
-            return Ok(());
-        }
-    };
+    let port = url.port().unwrap_or(80);
 
     let report = goku::attack(concurrency, requests, host, port)?;
 
