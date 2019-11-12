@@ -1,7 +1,7 @@
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
-use async_std::net::{ TcpStream, ToSocketAddrs};
+use async_std::net::{TcpStream, ToSocketAddrs};
 use async_std::prelude::*;
 use async_std::sync::channel;
 use async_std::task;

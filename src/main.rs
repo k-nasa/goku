@@ -58,9 +58,16 @@ fn build_app() -> App<'static, 'static> {
         .version(crate_version!())
         .about(crate_description!())
         .setting(AppSettings::DeriveDisplayOrder)
-        .subcommand(SubCommand::with_name("help").alias("h").about("Show help"))
+        .setting(AppSettings::ColoredHelp)
+        .subcommand(
+            SubCommand::with_name("help")
+                .alias("h")
+                .about("Show help")
+                .setting(AppSettings::ColoredHelp),
+        )
         .subcommand(
             SubCommand::with_name("kamehameha")
+                .setting(AppSettings::ColoredHelp)
                 .visible_alias("attack")
                 .about("Run load test")
                 .arg(Arg::with_name("url").help("Target url").required(true))
