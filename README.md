@@ -20,20 +20,27 @@ goku is a HTTP load testing application written in Rust
 
 Get them [here](https://github.com/k-nasa/goku/releases)
 
-#### using cargo
+### using homebrew
 
-```console
+```
+brew install k-nasa/tap/goku
+```
+
+### using cargo
+
+```
 cargo install goku
 ```
 
-##### Installation of cargo itself.
-```console
+#### Installation of cargo itself.
+
+```
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ```
 
 ## Usage
 
-```console
+```
 goku 0.1.0
 goku is a HTTP load testing application written in Rust
 
@@ -55,14 +62,14 @@ SUBCOMMANDS:
 Send 10,000 requests to 127.0.0.1:8080 in 10 parallel
 (There is an attack alias because hitting 'kamehameka' is awkward.)
 
-```console
+```
 goku kamehameha -c 10 -n 10000 'http://127.0.0.1:8080'
 # or goku attack -c 10 -n 10000 'http://127.0.0.1:8080'
 ```
 
 Output in json and text is possible. When combined with jq, the display can be made beautiful.
 
-```console
+```
 goku kamehameha -c 10 -n 10000 'http://127.0.0.1:8080' -o json | jq .
 
 {
