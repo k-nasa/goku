@@ -18,10 +18,17 @@ goku is a HTTP load testing application written in Rust
 
 ## Installation
 
+Get them [here](https://github.com/k-nasa/goku/releases)
+
 #### using cargo
 
 ```console
 cargo install goku
+```
+
+##### Installation of cargo itself.
+```console
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ```
 
 ## Usage
