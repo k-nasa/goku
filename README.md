@@ -3,9 +3,9 @@
 ![goku](https://user-images.githubusercontent.com/23740172/68545732-1ae00480-0413-11ea-8db9-3ceaafdb3b91.jpg)
 
 ## Overview
+
 [![Actions Status](https://github.com/k-nasa/goku/workflows/CI/badge.svg)](https://github.com/k-nasa/goku/actions)
 [![crate-name at crates.io](https://img.shields.io/crates/v/goku.svg)](https://crates.io/crates/goku)
-
 
 goku is a HTTP load testing application written in Rust
 
@@ -15,8 +15,9 @@ goku is a HTTP load testing application written in Rust
 
 ![goku](https://user-images.githubusercontent.com/23740172/68545671-92616400-0412-11ea-86f3-dba3a80f2227.gif)
 
-
 ## Installation
+
+### Pre-compiled executables
 
 Get them [here](https://github.com/k-nasa/goku/releases)
 
@@ -59,6 +60,7 @@ SUBCOMMANDS:
 ## Example
 
 ### kamehameha
+
 Send 10,000 requests to 127.0.0.1:8080 in 10 parallel
 (There is an attack alias because hitting 'kamehameka' is awkward.)
 
