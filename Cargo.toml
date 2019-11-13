@@ -1,6 +1,6 @@
 [package]
 name = "goku"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["k-nasa <htilcs1115@gmail.com>"]
 description = "goku is a HTTP load testing application written in Rust"
 keywords = ["cli", "goku", "load-testing", "performance", "http"]
