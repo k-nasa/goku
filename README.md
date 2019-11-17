@@ -21,6 +21,13 @@ goku is a HTTP load testing application written in Rust
 
 Get them [here](https://github.com/k-nasa/goku/releases)
 
+```
+curl -L -o goku.tar.gz https://github.com/k-nasa/goku/releases/download/0.1.1/goku_x86_64-apple-darwin.tar.gz
+tar -zxvf goku.tar.gz
+
+# Move binary file to the path
+```
+
 ### using homebrew
 
 ```
