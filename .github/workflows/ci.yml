@@ -26,28 +26,28 @@ jobs:
       uses: actions/cache@v1
       with:
         path: ~/.cargo/registry
-        key: ${{ runner.os }}-${{ matrix.rust }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}-
+        key: ${{ runner.os }}-${{ matrix.rust }}-cargo-registry-${{ hashFiles('**/Cargo.toml') }}-
 
     - name: Cache cargo registry (on Windows)
       if: matrix.os == 'windows-latest'
       uses: actions/cache@v1
       with:
         path: ~/.cargo/registry
-        key: ${{ runner.os }}-${{ matrix.rust }}-cargo-registry-${{ hashFiles('**\Cargo.lock') }}-
+        key: ${{ runner.os }}-${{ matrix.rust }}-cargo-registry-${{ hashFiles('**\Cargo.toml') }}-
 
     - name: Cache target
       if: matrix.os != 'windows-latest'
       uses: actions/cache@v1
       with:
         path: target
-        key: ${{ runner.os }}-${{ matrix.rust }}-target-${{ hashFiles('**/Cargo.lock') }}-
+        key: ${{ runner.os }}-${{ matrix.rust }}-target-${{ hashFiles('**/Cargo.toml') }}-
 
     - name: Cache build (on Windows)
       if: matrix.os == 'windows-latest'
       uses: actions/cache@v1
       with:
         path: target
-        key: ${{ runner.os }}-${{ matrix.rust }}-target-${{ hashFiles('**\Cargo.lock') }}-
+        key: ${{ runner.os }}-${{ matrix.rust }}-target-${{ hashFiles('**\Cargo.toml') }}-
 
     - name: Install ${{ matrix.rust }}
       uses: actions-rs/toolchain@v1
