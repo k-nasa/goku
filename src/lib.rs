@@ -146,7 +146,7 @@ pub fn attack(
     });
 
     let (_, report) =
-        task::block_on(async { async_std::future::join![send_handler, receive_handler].await });
+        task::block_on(async { send_handler.join(receive_handler).await });
 
     Ok(report)
 }
