@@ -69,7 +69,7 @@ pub fn attack(
 ) -> GokuResult<GokuReport> {
     let host = format!("{}:{}", host, port);
 
-    let request = format!("GET / HTTP/1.1\nHost: {}\nUser-Agent: goku/0.0.1\n\n", host);
+    let request = format!("GET / HTTP/1.1\r\nHost: {}\r\nUser-Agent: goku/0.0.1\r\n\r\n", host);
 
     let now = Instant::now();
     let (s, r) = channel(concurrency);
