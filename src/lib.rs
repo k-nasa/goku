@@ -104,7 +104,7 @@ pub fn attack(
         );
         pb.finish_with_message("finished");
 
-        while let Some(v) = r.recv().await {
+        while let Ok(v) = r.recv().await {
             match v.await {
                 Err(e) => {
                     errors.push(e);
