@@ -14,7 +14,7 @@ edition = "2018"
 
 [dependencies]
 async-std = { version = "1.6.2", features = ["unstable"] }
-clap = "2.33.1"
+clap = "2.33.2"
 env_logger = "0.7.1"
 log = "0.4.11"
 url = "2.1.1"
