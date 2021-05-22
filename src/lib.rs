@@ -1,9 +1,9 @@
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
+use async_std::channel;
 use async_std::net::{TcpStream, ToSocketAddrs};
 use async_std::prelude::*;
-use async_std::sync::channel;
 use async_std::task;
 use indicatif::{ProgressBar, ProgressStyle};
 use serde::{Deserialize, Serialize};
@@ -69,10 +69,13 @@ pub fn attack(
 ) -> GokuResult<GokuReport> {
     let host = format!("{}:{}", host, port);
 
-    let request = format!("GET / HTTP/1.1\r\nHost: {}\r\nUser-Agent: goku/0.0.1\r\n\r\n", host);
+    let request = format!(
+        "GET / HTTP/1.1\r\nHost: {}\r\nUser-Agent: goku/0.0.1\r\n\r\n",
+        host
+    );
 
     let now = Instant::now();
-    let (s, r) = channel(concurrency);
+    let (s, r) = channel::bounded(concurrency);
 
     let send_handler = task::spawn(async move {
         let host = Arc::<str>::from(host);
@@ -83,7 +86,7 @@ pub fn attack(
             let request = request.to_string();
 
             let handler = task::spawn(async move { send_request(&host, &request).await });
-            s.send(handler).await;
+            s.send(handler).await.unwrap();
         }
     });
 
