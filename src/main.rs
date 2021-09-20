@@ -95,6 +95,7 @@ fn build_app() -> App<'static, 'static> {
                         .short("o")
                         .long("output")
                         .possible_values(&["text", "json"])
+                        .default_value("text")
                         .value_name("output"),
                 )
                 .arg(
