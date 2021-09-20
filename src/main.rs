@@ -77,7 +77,8 @@ fn build_app() -> App<'static, 'static> {
                         .short("n")
                         .long("requests")
                         .value_name("requests")
-                        .required(true),
+                        .default_value("100")
+                        .required(false),
                 )
                 .arg(
                     Arg::with_name("concurrency")
@@ -85,7 +86,8 @@ fn build_app() -> App<'static, 'static> {
                         .short("c")
                         .long("concurrency")
                         .value_name("concurrency")
-                        .required(true),
+                        .default_value("1")
+                        .required(false),
                 )
                 .arg(
                     Arg::with_name("output")
